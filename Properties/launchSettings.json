@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "http": {
+    "Docker": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
@@ -25,10 +25,10 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Docker": {
+    "Develop": {
       "commandName": "Docker",
       "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "launchUrl": "http://{ServiceHost}:5055",
       "environmentVariables": {
         "ASPNETCORE_URLS": "https://+:7217;http://+:5055"
       },
@@ -40,8 +40,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:10723",
-      "sslPort": 44328
+      "applicationUrl": "http://localhost:57491/",
+      "sslPort": 44320
     }
   }
 }
