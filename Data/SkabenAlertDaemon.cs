@@ -8,10 +8,10 @@ namespace Panel.Data
 {
     public class SkabenAlertDaemon
     {
-        private readonly IHttpClientFactory _clientFactory;
+        private readonly HttpClient _client;
         public SkabenAlertDaemon(IHttpClientFactory clientFactory)
         {
-            _clientFactory = clientFactory;
+            _client = clientFactory.CreateClient("skaben_api"); ;
             Summaries = new[] { new AlertState { Id = 1, Name = "white", IsCurrent = true } };
         }
 
@@ -35,29 +35,54 @@ namespace Panel.Data
 
         public async Task<AlertCounter> GetCounterLastAsync()
         {
-            using var client = _clientFactory.CreateClient("skaben_api");
-            var counter = await client.GetStringAsync("alert_counter/get_latest");
+            var counter = await _client.GetStringAsync("alert_counter/get_latest");
             Trace.WriteLine($"alerts: {counter} success");
             return PanelHelper.JsonSerializerHelper.Deserialize<AlertCounter>(counter) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
         }
 
         public async Task<AlertState[]> GetAlertsAsync()
         {
-            using var client = _clientFactory.CreateClient("skaben_api");
-            var alerts = await client.GetStringAsync("alert_state");
+            var alerts = await _client.GetStringAsync("alert_state");
             return PanelHelper.JsonSerializerHelper.Deserialize<AlertState[]>(alerts) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
         }
 
+        public async Task<bool> DecreaseCurrentCounterValueAsync(int value)
+        {
+            var current = await GetCounterLastAsync();
+            return await UpdateCurrentCounterValueAsync(current.Value - value);
+        }
+
+        public async Task<bool> IncreaseCurrentCounterValueAsync(int value)
+        {
+            var current = await GetCounterLastAsync();
+            return await UpdateCurrentCounterValueAsync(current.Value + value);
+        }
+
+        private async Task<bool> UpdateCurrentCounterValueAsync(int value)
+        {
+            var time = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+            using StringContent jsonContent = new(PanelHelper.JsonSerializerHelper.Serialize(new
+            {
+                value = value,
+                comment = "Изменение из админки",
+                timestamp = time
+            }), Encoding.UTF8, "application/json");
+            using HttpResponseMessage response = await _client.PostAsync(
+                $"alert_counter/",
+                jsonContent);
+            if (response.IsSuccessStatusCode)
+                await RefreshSummariesAsync();
+            return response.IsSuccessStatusCode;
+        }
+
+
         public async Task<bool> PostAlertAsync(int id)
         {
-            using var client = _clientFactory.CreateClient("skaben_api");
             using StringContent jsonContent = new(PanelHelper.JsonSerializerHelper.Serialize(new
             {
                 current = true,
-            }),
-                                                Encoding.UTF8,
-                                                "application/json");
-            using HttpResponseMessage response = await client.PostAsync(
+            }), Encoding.UTF8, "application/json");
+            using HttpResponseMessage response = await _client.PostAsync(
                 $"alert_state/{id}/set_current/",
                 jsonContent);
             if (response.IsSuccessStatusCode)

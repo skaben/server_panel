@@ -4,7 +4,7 @@
         Уровень тревоги:  <b>@AlertDaemon.CurrentCounter</b>(@AlertDaemon.CurrentAlertState.Info)
     </div>
     <div>
-        <button @onclick=DecreaseCurrentCounterValue>Уменшить УТ</button>
+        <button @onclick=DecreaseCurrentCounterValue>Уменьшить УТ</button>
         <input @bind=ChangeCount type="number" />
         <button @onclick=IncreaseCurrentCounterValue>Увеличить УТ</button>
 
@@ -53,14 +53,17 @@
     void ToggleSummary()
     {
         ShowSummary = !ShowSummary;
+        SelectedId = AlertDaemon.CurrentAlertState.Id;
     }
 
     async Task DecreaseCurrentCounterValue()
     {
+        await AlertDaemon.DecreaseCurrentCounterValueAsync(ChangeCount);
     }
 
     async Task IncreaseCurrentCounterValue()
     {
+        await AlertDaemon.IncreaseCurrentCounterValueAsync(ChangeCount);
     }
 
     async Task ApplyNewAlertState()
