@@ -22,4 +22,4 @@ RUN dotnet publish "./Panel.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:U
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Panel.dll", "--launch-profile='Develop'"]
+ENTRYPOINT ["dotnet", "Panel.dll", "--launch-profile='Release'"]
