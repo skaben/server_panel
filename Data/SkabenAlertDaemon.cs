@@ -13,7 +13,7 @@ namespace Panel.Data
         {
             _httpClient = http;
             _httpClient.Timeout = TimeSpan.FromSeconds(5);
-            _httpClient.BaseAddress = new Uri("http://api/api/");
+            _httpClient.BaseAddress = new Uri("http://api:8000/api/");
             Summaries = new[] { new AlertState { Id = 1, Name = "white", IsCurrent = true } };
         }
 
@@ -22,10 +22,10 @@ namespace Panel.Data
 
         public AlertState CurrentAlertState
         {
-            get { return Summaries.FirstOrDefault(x => x.IsCurrent) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. getCurrentAlertState"); }
+            get { return Summaries.FirstOrDefault(x => x.IsCurrent) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. CurrentAlertState"); }
             set
             {
-                (Summaries.FirstOrDefault(x => x.Name == value.Name) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. setCurrentAlertState")).IsCurrent = true;
+                (Summaries.FirstOrDefault(x => x.Name == value.Name) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon")).IsCurrent = true;
             }
         }
         public async Task<AlertState[]> RefreshSummariesAsync()
