@@ -13,7 +13,7 @@ namespace Panel.Data
         {
             _httpClient = http;
             _httpClient.Timeout = TimeSpan.FromSeconds(5);
-            _httpClient.BaseAddress = new Uri("http://localhost/api/");
+            _httpClient.BaseAddress = new Uri("http://127.0.0.1/api/");
             Summaries = new[] { new AlertState { Id = 1, Name = "white", IsCurrent = true } };
         }
 
@@ -55,6 +55,7 @@ namespace Panel.Data
         {
             try
             {
+                Trace.WriteLine($"GetAlertsAsync");
                 var alerts = await _httpClient.GetStringAsync("alert_state");
                 Trace.WriteLine($"alerts: {alerts} success");
                 return PanelHelper.JsonSerializerHelper.Deserialize<AlertState[]>(alerts) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
