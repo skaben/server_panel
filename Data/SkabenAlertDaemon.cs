@@ -13,7 +13,7 @@ namespace Panel.Data
         {
             _httpClient = http;
             _httpClient.Timeout = TimeSpan.FromSeconds(5);
-            _httpClient.BaseAddress = new Uri("http://127.0.0.1/api/");
+            _httpClient.BaseAddress = new Uri("http://api/api/");
             Summaries = new[] { new AlertState { Id = 1, Name = "white", IsCurrent = true } };
         }
 
