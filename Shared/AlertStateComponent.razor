@@ -1,0 +1,76 @@
+﻿@using Panel.Data
+<div class="top-row px-4 test-@alertColor">
+    <div>
+        Уровень тревоги:  <b>@AlertDaemon.CurrentCounter</b>(@AlertDaemon.CurrentAlertState.Info)
+    </div>
+    <div>
+        <button @onclick=DecreaseCurrentCounterValue>Уменшить УТ</button>
+        <input @bind=ChangeCount type="number" />
+        <button @onclick=IncreaseCurrentCounterValue>Увеличить УТ</button>
+
+    </div>
+    <button @onclick=ToggleSummary class="asc-body" type="reset">@AlertDaemon.CurrentAlertState.Name</button>
+    @if (ShowSummary)
+    {
+        <select @bind="SelectedId">
+            @foreach (var summary in AlertDaemon.Summaries)
+            {
+                <option value="@summary.Id">@summary.Name</option>
+            }
+        </select>
+        <button @onclick=ApplyNewAlertState>Применить</button>
+    }
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await AlertDaemon.RefreshSummariesAsync();
+        SelectedId = AlertDaemon.CurrentAlertState.Id;
+    }
+
+    [Inject]
+    private SkabenAlertDaemon? _alertDaemon { get; set; }
+
+    private SkabenAlertDaemon AlertDaemon
+    {
+        get
+        {
+            if (_alertDaemon == null) throw new Exception("No alert daemon");
+            return _alertDaemon;
+        }
+    }
+
+    private string alertColor => AlertDaemon.CurrentAlertState.Name;
+    private bool ShowSummary = false;
+    private int ChangeCount { get; set; } = 10;
+    private int SelectedId { get; set; } = 0;
+
+    void ToggleSummary()
+    {
+        ShowSummary = !ShowSummary;
+    }
+
+    async Task DecreaseCurrentCounterValue()
+    {
+    }
+
+    async Task IncreaseCurrentCounterValue()
+    {
+    }
+
+    async Task ApplyNewAlertState()
+    {
+        if(await AlertDaemon.PostAlertAsync(SelectedId))
+        {
+            ShowSummary = false;
+            SelectedId = 0;
+        }
+        else
+        {
+            //TODO modal component
+        }
+
+    }
+}
+

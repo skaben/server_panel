@@ -1,8 +1,8 @@
 ﻿@page "/fetchdata"
 @using Panel.Data
-@inject WeatherForecastService ForecastService
+@inject SkabenAlertDaemon alertService
 
-<PageTitle>Weather forecast</PageTitle>
+@* <PageTitle>Weather forecast</PageTitle>
 
 <h1>Weather forecast</h1>
 
@@ -18,9 +18,9 @@ else
         <thead>
             <tr>
                 <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>1</th>
+                <th>Много текста</th>
+                <th>@forecasts.Length</th>
             </tr>
         </thead>
         <tbody>
@@ -28,20 +28,17 @@ else
             {
                 <tr>
                     <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@forecast.IsNotLocked</td>
+                    <td>@forecast.Text</td>
+                    <td>@forecast.Locked</td>
                 </tr>
             }
         </tbody>
-    </table>
+    </table> *@
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private TerminalState[]? forecasts;
 
-    protected override async Task OnInitializedAsync()
-    {
-        forecasts = await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
-    }
+
 }
