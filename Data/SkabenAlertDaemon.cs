@@ -22,10 +22,10 @@ namespace Panel.Data
 
         public AlertState CurrentAlertState
         {
-            get { return Summaries.FirstOrDefault(x => x.IsCurrent) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon"); }
+            get { return Summaries.FirstOrDefault(x => x.IsCurrent) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. getCurrentAlertState"); }
             set
             {
-                (Summaries.FirstOrDefault(x => x.Name == value.Name) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon")).IsCurrent = true;
+                (Summaries.FirstOrDefault(x => x.Name == value.Name) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. setCurrentAlertState")).IsCurrent = true;
             }
         }
         public async Task<AlertState[]> RefreshSummariesAsync()
@@ -37,35 +37,17 @@ namespace Panel.Data
 
         public async Task<AlertCounter> GetCounterLastAsync()
         {
-            try
-            {
-                var counter = await _httpClient.GetStringAsync("alert_counter/get_latest");
-                Trace.WriteLine($"alerts: {counter} success");
-                return PanelHelper.JsonSerializerHelper.Deserialize<AlertCounter>(counter) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
-            }
-            catch (Exception e)
-            {
-
-                Trace.TraceError(e.Message);
-            }
-            return new();
+            var counter = await _httpClient.GetStringAsync("alert_counter/get_latest");
+            Trace.WriteLine($"alerts: {counter} success");
+            return PanelHelper.JsonSerializerHelper.Deserialize<AlertCounter>(counter) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
         }
 
         public async Task<AlertState[]> GetAlertsAsync()
         {
-            try
-            {
-                Trace.WriteLine($"GetAlertsAsync");
-                var alerts = await _httpClient.GetStringAsync("alert_state");
-                Trace.WriteLine($"alerts: {alerts} success");
-                return PanelHelper.JsonSerializerHelper.Deserialize<AlertState[]>(alerts) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
-            }
-            catch (Exception e)
-            {
-
-                Trace.TraceError(e.Message);
-            }
-            return new AlertState[0];
+            Trace.WriteLine($"GetAlertsAsync");
+            var alerts = await _httpClient.GetStringAsync("alert_state");
+            Trace.WriteLine($"alerts: {alerts} success");
+            return PanelHelper.JsonSerializerHelper.Deserialize<AlertState[]>(alerts) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
         }
 
         public async Task<bool> PostAlertAsync(int id)
@@ -73,9 +55,9 @@ namespace Panel.Data
             try
             {
                 using StringContent jsonContent = new(PanelHelper.JsonSerializerHelper.Serialize(new
-                                                {
-                                                    current = true,
-                                                    }),
+                {
+                    current = true,
+                }),
                                                 Encoding.UTF8,
                                                 "application/json");
                 using HttpResponseMessage response = await _httpClient.PostAsync(
