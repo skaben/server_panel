@@ -14,14 +14,15 @@
     position: relative;
 }
 
-.asc-body {
-    position: relative;
-    right: -30%;
-    top: 60%;
-    text-decoration:none;
-    color:black
+.color-pick {
+    margin-left: 70%;
+    display: flex;
+    gap:8px;
+    margin-right: auto;
+    text-decoration: none;
+    color: black;
 }
-    .asc-body:hover {
+    .color-pick:hover {
         font-weight: bold;
     }
 

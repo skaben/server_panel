@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Panel.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,16 +9,15 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddHttpLogging(o => { });
 }
-
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<SkabenAlertDaemon>();
-builder.Services.AddHttpClient();
+var url = builder.Configuration["API_URL"] ?? "";
+builder.Services.AddHttpClient<HttpClient>("skaben_api", client => client.BaseAddress = new Uri(url));
 
 
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

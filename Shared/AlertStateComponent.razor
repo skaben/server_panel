@@ -9,17 +9,21 @@
         <button @onclick=IncreaseCurrentCounterValue>Увеличить УТ</button>
 
     </div>
-    <button @onclick=ToggleSummary class="asc-body" type="reset">@AlertDaemon.CurrentAlertState.Name</button>
-    @if (ShowSummary)
-    {
-        <select @bind="SelectedId">
-            @foreach (var summary in AlertDaemon.Summaries)
-            {
-                <option value="@summary.Id">@summary.Name</option>
-            }
-        </select>
-        <button @onclick=ApplyNewAlertState>Применить</button>
-    }
+    <div class="color-pick">
+        <button @onclick=ToggleSummary type="reset">@AlertDaemon.CurrentAlertState.Name</button>
+        @if (ShowSummary)
+        {
+            <select @bind="SelectedId">
+                @foreach (var summary in AlertDaemon.Summaries)
+                {
+                    <option value="@summary.Id">@summary.Name</option>
+                }
+            </select>
+            <button @onclick=ApplyNewAlertState>Применить</button>
+        }
+    </div>
+
+
 </div>
 
 @code {
@@ -61,7 +65,7 @@
 
     async Task ApplyNewAlertState()
     {
-        if(await AlertDaemon.PostAlertAsync(SelectedId))
+        if (await AlertDaemon.PostAlertAsync(SelectedId))
         {
             ShowSummary = false;
             SelectedId = 0;

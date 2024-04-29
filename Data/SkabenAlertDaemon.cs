@@ -8,12 +8,10 @@ namespace Panel.Data
 {
     public class SkabenAlertDaemon
     {
-        private readonly HttpClient _httpClient;
-        public SkabenAlertDaemon(HttpClient http)
+        private readonly IHttpClientFactory _clientFactory;
+        public SkabenAlertDaemon(IHttpClientFactory clientFactory)
         {
-            _httpClient = http;
-            _httpClient.Timeout = TimeSpan.FromSeconds(5);
-            _httpClient.BaseAddress = new Uri("http://api:8000/api/");
+            _clientFactory = clientFactory;
             Summaries = new[] { new AlertState { Id = 1, Name = "white", IsCurrent = true } };
         }
 
@@ -37,42 +35,34 @@ namespace Panel.Data
 
         public async Task<AlertCounter> GetCounterLastAsync()
         {
-            var counter = await _httpClient.GetStringAsync("alert_counter/get_latest");
+            using var client = _clientFactory.CreateClient("skaben_api");
+            var counter = await client.GetStringAsync("alert_counter/get_latest");
             Trace.WriteLine($"alerts: {counter} success");
             return PanelHelper.JsonSerializerHelper.Deserialize<AlertCounter>(counter) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
         }
 
         public async Task<AlertState[]> GetAlertsAsync()
         {
-            Trace.WriteLine($"GetAlertsAsync");
-            var alerts = await _httpClient.GetStringAsync("alert_state");
-            Trace.WriteLine($"alerts: {alerts} success");
+            using var client = _clientFactory.CreateClient("skaben_api");
+            var alerts = await client.GetStringAsync("alert_state");
             return PanelHelper.JsonSerializerHelper.Deserialize<AlertState[]>(alerts) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
         }
 
         public async Task<bool> PostAlertAsync(int id)
         {
-            try
+            using var client = _clientFactory.CreateClient("skaben_api");
+            using StringContent jsonContent = new(PanelHelper.JsonSerializerHelper.Serialize(new
             {
-                using StringContent jsonContent = new(PanelHelper.JsonSerializerHelper.Serialize(new
-                {
-                    current = true,
-                }),
+                current = true,
+            }),
                                                 Encoding.UTF8,
                                                 "application/json");
-                using HttpResponseMessage response = await _httpClient.PostAsync(
-                    $"alert_state/{id}/set_current/",
-                    jsonContent);
-                if (response.IsSuccessStatusCode)
-                    await RefreshSummariesAsync();
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception e)
-            {
-
-                Trace.TraceError(e.Message);
-            }
-            return false;
+            using HttpResponseMessage response = await client.PostAsync(
+                $"alert_state/{id}/set_current/",
+                jsonContent);
+            if (response.IsSuccessStatusCode)
+                await RefreshSummariesAsync();
+            return response.IsSuccessStatusCode;
         }
     }
 }
