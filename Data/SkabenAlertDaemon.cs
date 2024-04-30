@@ -8,10 +8,10 @@ namespace Panel.Data
 {
     public class SkabenAlertDaemon
     {
-        private readonly HttpClient _client;
+        private readonly SkabenAPIClient _client;
         public SkabenAlertDaemon(IHttpClientFactory clientFactory)
         {
-            _client = clientFactory.CreateClient("skaben_api"); ;
+            _client = new SkabenAPIClient(clientFactory);
             Summaries = new[] { new AlertState { Id = 1, Name = "white", IsCurrent = true } };
         }
 
@@ -26,6 +26,7 @@ namespace Panel.Data
                 (Summaries.FirstOrDefault(x => x.Name == value.Name) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon")).IsCurrent = true;
             }
         }
+
         public async Task<AlertState[]> RefreshSummariesAsync()
         {
             CurrentCounter = (await GetCounterLastAsync()).Value;
@@ -33,61 +34,38 @@ namespace Panel.Data
             return Summaries;
         }
 
-        public async Task<AlertCounter> GetCounterLastAsync()
-        {
-            var counter = await _client.GetStringAsync("alert_counter/get_latest");
-            Trace.WriteLine($"alerts: {counter} success");
-            return PanelHelper.JsonSerializerHelper.Deserialize<AlertCounter>(counter) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
-        }
-
-        public async Task<AlertState[]> GetAlertsAsync()
-        {
-            var alerts = await _client.GetStringAsync("alert_state");
-            return PanelHelper.JsonSerializerHelper.Deserialize<AlertState[]>(alerts) ?? throw new Exception("Что-от пошло не так, вызывайте котиков. SkabenAlertDaemon");
-        }
-
-        public async Task<bool> DecreaseCurrentCounterValueAsync(int value)
+        public async Task DecreaseCurrentCounterValueAsync(int value)
         {
             var current = await GetCounterLastAsync();
-            return await UpdateCurrentCounterValueAsync(current.Value - value);
+            if (await _client.UpdateCurrentCounterValueAsync(current.Value - value))
+                await RefreshSummariesAsync();
         }
 
-        public async Task<bool> IncreaseCurrentCounterValueAsync(int value)
+        public async Task IncreaseCurrentCounterValueAsync(int value)
         {
             var current = await GetCounterLastAsync();
-            return await UpdateCurrentCounterValueAsync(current.Value + value);
+            if (await _client.UpdateCurrentCounterValueAsync(current.Value + value))
+                await RefreshSummariesAsync();
         }
 
-        private async Task<bool> UpdateCurrentCounterValueAsync(int value)
+        public async Task PostAlertAsync(int id)
         {
-            var time = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
-            using StringContent jsonContent = new(PanelHelper.JsonSerializerHelper.Serialize(new
-            {
-                value = value,
-                comment = "Изменение из админки",
-                timestamp = time
-            }), Encoding.UTF8, "application/json");
-            using HttpResponseMessage response = await _client.PostAsync(
-                $"alert_counter/",
-                jsonContent);
-            if (response.IsSuccessStatusCode)
+            if (await _client.SetCurrentAlertAsync(id))
                 await RefreshSummariesAsync();
-            return response.IsSuccessStatusCode;
         }
 
-
-        public async Task<bool> PostAlertAsync(int id)
+        private async Task<AlertCounter> GetCounterLastAsync()
         {
-            using StringContent jsonContent = new(PanelHelper.JsonSerializerHelper.Serialize(new
-            {
-                current = true,
-            }), Encoding.UTF8, "application/json");
-            using HttpResponseMessage response = await _client.PostAsync(
-                $"alert_state/{id}/set_current/",
-                jsonContent);
-            if (response.IsSuccessStatusCode)
-                await RefreshSummariesAsync();
-            return response.IsSuccessStatusCode;
+            var counter = await _client.GetCounterLastAsync();
+            //обработка ошибок
+            return counter;
+        }
+
+        private async Task<AlertState[]> GetAlertsAsync()
+        {
+            var alerts = await _client.GetAlertsAsync();
+            // обработка ошибок
+            return alerts;
         }
     }
 }

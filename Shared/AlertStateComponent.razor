@@ -7,7 +7,6 @@
         <button @onclick=DecreaseCurrentCounterValue>Уменьшить УТ</button>
         <input @bind=ChangeCount type="number" />
         <button @onclick=IncreaseCurrentCounterValue>Увеличить УТ</button>
-
     </div>
     <div class="color-pick">
         <button @onclick=ToggleSummary type="reset">@AlertDaemon.CurrentAlertState.Name</button>
@@ -22,8 +21,6 @@
             <button @onclick=ApplyNewAlertState>Применить</button>
         }
     </div>
-
-
 </div>
 
 @code {
@@ -68,16 +65,7 @@
 
     async Task ApplyNewAlertState()
     {
-        if (await AlertDaemon.PostAlertAsync(SelectedId))
-        {
-            ShowSummary = false;
-            SelectedId = 0;
-        }
-        else
-        {
-            //TODO modal component
-        }
-
+        await AlertDaemon.PostAlertAsync(SelectedId);
     }
 }
 
