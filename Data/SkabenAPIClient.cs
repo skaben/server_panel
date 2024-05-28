@@ -20,7 +20,7 @@ namespace Panel.Data
                 current = true,
             }), Encoding.UTF8, "application/json");
             using HttpResponseMessage response = await _client.PostAsync(
-                $"alert_state/{id}/set_current/",
+                $"alert/alert_state/{id}/set_current/",
                 jsonContent);
             return response.IsSuccessStatusCode;
         }
@@ -35,21 +35,21 @@ namespace Panel.Data
                 timestamp = time
             }), Encoding.UTF8, "application/json");
             using HttpResponseMessage response = await _client.PostAsync(
-                $"alert_counter/",
+                $"alert/alert_counter/",
                 jsonContent);
             return response.IsSuccessStatusCode;
         }
 
         public async Task<AlertCounter> GetCounterLastAsync()
         {
-            var response = await _client.GetStringAsync("alert_counter/get_latest");
+            var response = await _client.GetStringAsync("alert/alert_counter/get_latest");
             return PanelHelper.JsonSerializerHelper.Deserialize<AlertCounter>(response) 
                 ?? new AlertCounter { Comment = "ERROR" };
         }
 
         public async Task<AlertState[]> GetAlertsAsync()
         {
-            var response = await _client.GetStringAsync("alert_state");
+            var response = await _client.GetStringAsync("alert/alert_state");
             return PanelHelper.JsonSerializerHelper.Deserialize<AlertState[]>(response) ?? new AlertState[] { };
         }
     }

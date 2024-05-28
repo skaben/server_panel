@@ -30,7 +30,7 @@ namespace Panel.Data
         public async Task<AlertState[]> RefreshSummariesAsync()
         {
             CurrentCounter = (await GetCounterLastAsync()).Value;
-            Summaries = await GetAlertsAsync();
+            Summaries = (await GetAlertsAsync()).OrderBy(s=>s.Id).ToArray();
             return Summaries;
         }
 
